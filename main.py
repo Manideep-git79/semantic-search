@@ -18,7 +18,14 @@ dataset = pd.read_csv("data/cleaned_dataset.csv")
 
 class QueryRequest(BaseModel):
     query:str
-
+    
+@app.get("/")
+def home():
+    return {
+        "message": "Semantic Search API is running",
+        "docs": "Open /docs to test the API"
+    }
+    
 @app.post("/query")
 def query_search(request:QueryRequest):
 
