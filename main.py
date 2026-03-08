@@ -27,39 +27,36 @@ def home():
     }
     
 @app.post("/query")
-def query_search(request:QueryRequest):
+def query_search(request: QueryRequest):
+    query = request.query
 
-    query=request.query
-
-    hit,entry,score=cache.search(query)
-
+    hit, entry, score = cache.search(query)
     if hit:
         return {
-            "query":query,
-            "cache_hit":True,
-            "matched_query":entry["query"],
-            "similarity_score":float(score),
-            "result":entry["result"],
-            "dominant_cluster":None
+            "query": query,
+            "cache_hit": True,
+            "matched_query": entry["query"],
+            "similarity_score": float(score),
+            "result": entry["result"],
+            "dominant_cluster": None
         }
 
-    query_embedding=model.encode([query])
+    query_embedding = model.encode([query]).astype("float32")  # ensure float32 for FAISS
 
-    D,I=index.search(np.array(query_embedding),k=1)
+    D, I = index.search(query_embedding, k=1)
 
-    result=dataset.iloc[I[0][0]]["text"]
+    result = dataset.iloc[I[0][0]]["clean_text"]
 
-    cache.add(query,result)
+    cache.add(query, result)
 
     return {
-        "query":query,
-        "cache_hit":False,
-        "matched_query":None,
-        "similarity_score":None,
-        "result":result,
-        "dominant_cluster":None
+        "query": query,
+        "cache_hit": False,
+        "matched_query": None,
+        "similarity_score": None,
+        "result": result,
+        "dominant_cluster": None
     }
-
 
 @app.get("/cache/stats")
 def stats():
